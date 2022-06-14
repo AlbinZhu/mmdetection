@@ -2,7 +2,7 @@
 Author: bin.zhu
 Date: 2022-06-14 11:29:44
 LastEditors: bin.zhu
-LastEditTime: 2022-06-14 14:34:12
+LastEditTime: 2022-06-14 15:23:52
 Description: file content
 '''
 
@@ -33,9 +33,13 @@ train_dataset = dict(
     ))
 data = dict(
     samples_per_gpu=16,
-    workers_per_gpu=10,
+    workers_per_gpu=1,
     train=train_dataset,
     val=dict(
+        type=dataset_type,
+        ann_file=data_root + 'annotations/val.json',
+        img_prefix=data_root + 'val/'),
+    test=dict(
         type=dataset_type,
         ann_file=data_root + 'annotations/val.json',
         img_prefix=data_root + 'val/'))
