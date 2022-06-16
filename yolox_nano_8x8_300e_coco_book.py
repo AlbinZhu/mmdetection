@@ -138,7 +138,7 @@ data = dict(
                 flip=False,
                 transforms=[
                     dict(type='Resize', keep_ratio=True),
-                    # dict(type='RandomFlip'),
+                    dict(type='RandomFlip'),
                     dict(
                         type='Pad',
                         pad_to_square=True,
@@ -159,7 +159,7 @@ data = dict(
                 flip=False,
                 transforms=[
                     dict(type='Resize', keep_ratio=True),
-                    # dict(type='RandomFlip'),
+                    dict(type='RandomFlip'),
                     dict(
                         type='Pad',
                         pad_to_square=True,
