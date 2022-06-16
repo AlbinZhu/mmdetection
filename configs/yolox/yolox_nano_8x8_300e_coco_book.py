@@ -2,7 +2,7 @@
 Author: bin.zhu
 Date: 2022-06-14 11:29:44
 LastEditors: bin.zhu
-LastEditTime: 2022-06-16 11:30:31
+LastEditTime: 2022-06-16 13:26:02
 Description: file content
 '''
 
@@ -40,7 +40,7 @@ train_dataset = dict(
             border=(-320, -320)),
         dict(type='YOLOXHSVRandomAug'),
         dict(type='RandomFlip', flip_ratio=0.5),
-        dict(type='Resize', img_scale=(640, 640), keep_ratio=True),
+        dict(type='Resize', img_scale=(1024, 1024), keep_ratio=True),
         dict(
             type='Pad',
             pad_to_square=True,
