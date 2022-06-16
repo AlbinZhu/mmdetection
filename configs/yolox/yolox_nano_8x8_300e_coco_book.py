@@ -2,7 +2,7 @@
 Author: bin.zhu
 Date: 2022-06-14 11:29:44
 LastEditors: bin.zhu
-LastEditTime: 2022-06-16 11:22:45
+LastEditTime: 2022-06-16 11:30:31
 Description: file content
 '''
 
@@ -21,6 +21,7 @@ model = dict(
         num_classes=9, in_channels=64, feat_channels=64, use_depthwise=True))
 
 train_dataset = dict(
+    type='MultiImageMixDataset',
     dataset=dict(
         type=dataset_type,
         ann_file=data_root + 'annotations/train.json',
