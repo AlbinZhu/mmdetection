@@ -126,7 +126,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=20,
+    samples_per_gpu=12,
     workers_per_gpu=4,
     persistent_workers=True,
     train=dict(
@@ -141,14 +141,14 @@ data = dict(
             ],
             filter_empty_gt=False),
         pipeline=[
-            dict(type='Mosaic', img_scale=(1024, 1024), pad_val=114.0),
+            dict(type='Mosaic', img_scale=(640, 640), pad_val=114.0),
             dict(
                 type='RandomAffine',
                 scaling_ratio_range=(0.5, 1.5),
                 border=(-320, -320)),
             dict(type='YOLOXHSVRandomAug'),
             dict(type='RandomFlip', flip_ratio=0.5),
-            dict(type='Resize', img_scale=(1024, 1024), keep_ratio=True),
+            dict(type='Resize', img_scale=(640, 640), keep_ratio=True),
             dict(
                 type='Pad',
                 pad_to_square=True,
@@ -168,7 +168,7 @@ data = dict(
             dict(type='LoadImageFromFile'),
             dict(
                 type='MultiScaleFlipAug',
-                img_scale=(1024, 1024),
+                img_scale=(640, 640),
                 flip=False,
                 transforms=[
                     dict(type='Resize', keep_ratio=True),
@@ -189,7 +189,7 @@ data = dict(
             dict(type='LoadImageFromFile'),
             dict(
                 type='MultiScaleFlipAug',
-                img_scale=(1024, 1024),
+                img_scale=(640, 640),
                 flip=False,
                 transforms=[
                     dict(type='Resize', keep_ratio=True),
