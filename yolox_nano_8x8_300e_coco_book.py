@@ -62,35 +62,7 @@ model = dict(
     test_cfg=dict(score_thr=0.01, nms=dict(type='nms', iou_threshold=0.65)))
 data_root = '/albin/coco/'
 dataset_type = 'BookDataset'
-train_dataset = dict(
-    type='MultiImageMixDataset',
-    dataset=dict(
-        type='BookDataset',
-        ann_file='/albin/coco/annotations/train.json',
-        img_prefix='/albin/coco/train/',
-        pipeline=[
-            dict(type='LoadImageFromFile'),
-            dict(type='LoadAnnotations', with_bbox=True)
-        ],
-        filter_empty_gt=False),
-    pipeline=[
-        dict(type='Mosaic', img_scale=(640, 640), pad_val=114.0),
-        dict(
-            type='RandomAffine',
-            scaling_ratio_range=(0.5, 1.5),
-            border=(-320, -320)),
-        dict(type='YOLOXHSVRandomAug'),
-        dict(type='RandomFlip', flip_ratio=0.5),
-        dict(type='Resize', img_scale=(640, 640), keep_ratio=True),
-        dict(
-            type='Pad',
-            pad_to_square=True,
-            pad_val=dict(img=(114.0, 114.0, 114.0))),
-        dict(
-            type='FilterAnnotations', min_gt_bbox_wh=(1, 1), keep_empty=False),
-        dict(type='DefaultFormatBundle'),
-        dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
-    ])
+
 data = dict(
     samples_per_gpu=12,
     workers_per_gpu=4,
