@@ -8,7 +8,7 @@ Description: file content
 
 _base_ = './yolox_tiny_8x8_300e_coco.py'
 dataset_type = 'BookDataset'
-data_root = '/home/albin/Documents/projects/data_process/coco/'
+data_root = '/albin/coco/'
 # model settings
 model = dict(
     backbone=dict(deepen_factor=0.33, widen_factor=0.25, use_depthwise=True),
@@ -52,8 +52,8 @@ train_dataset = dict(
             dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
         ]),
 data = dict(
-    samples_per_gpu=16,
-    workers_per_gpu=1,
+    samples_per_gpu=20,
+    workers_per_gpu=4,
     train=train_dataset,
     val=dict(
         type=dataset_type,
@@ -97,4 +97,6 @@ data = dict(
                     dict(type='DefaultFormatBundle'),
                     dict(type='Collect', keys=['img'])
                 ])
-        ]))
+        ])),
+load_from="/albin/yolox_tiny_8x8_300e_coco_20211124_171234-b4047906.pth"
+>>>>>>> config
