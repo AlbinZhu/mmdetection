@@ -2,7 +2,7 @@
 Author: bin.zhu
 Date: 2022-06-14 11:29:44
 LastEditors: bin.zhu
-LastEditTime: 2022-06-16 10:09:09
+LastEditTime: 2022-06-16 11:17:14
 Description: file content
 '''
 
@@ -97,6 +97,5 @@ data = dict(
                     dict(type='DefaultFormatBundle'),
                     dict(type='Collect', keys=['img'])
                 ])
-        ])),
+        ]))
 load_from="/albin/yolox_tiny_8x8_300e_coco_20211124_171234-b4047906.pth"
->>>>>>> config
