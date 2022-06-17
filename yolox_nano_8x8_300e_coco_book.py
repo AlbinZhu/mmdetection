@@ -64,7 +64,7 @@ data_root = '/albin/coco/'
 dataset_type = 'BookDataset'
 
 data = dict(
-    samples_per_gpu=12,
+    samples_per_gpu=20,
     workers_per_gpu=4,
     persistent_workers=True,
     train=dict(
@@ -84,8 +84,8 @@ data = dict(
             #     type='RandomAffine',
             #     scaling_ratio_range=(0.5, 1.5),
             #     border=(-320, -320)),
-            # dict(type='YOLOXHSVRandomAug'),
-            # dict(type='RandomFlip', flip_ratio=0.5),
+            dict(type='YOLOXHSVRandomAug'),
+            dict(type='RandomFlip', flip_ratio=0.5),
             dict(type='Resize', img_scale=(640, 640), keep_ratio=True),
             dict(
                 type='Pad',
