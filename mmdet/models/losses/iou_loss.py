@@ -237,6 +237,80 @@ def ciou_loss(pred, target, eps=1e-7):
     return loss
 
 
+@mmcv.jit(derivate=True, coderize=True)
+@weighted_loss
+def siou_loss(pred, target, eps=1e-7):
+    r"""`Implementation of paper `SIoU Loss: More Powerful Learning
+     for Bounding Box Regression  <https://arxiv.org/pdf/2205.12740>`_.
+
+    Args:
+        pred (Tensor): Predicted bboxes of format (x1, y1, x2, y2),
+            shape (n, 4).
+        target (Tensor): Corresponding gt bboxes, shape (n, 4).
+        eps (float): Eps to avoid log(0).
+    Return:
+        Tensor: Loss tensor.
+    """
+
+    # overlap
+    lt = torch.max(pred[:, :2], target[:, :2])
+    rb = torch.min(pred[:, 2:], target[:, 2:])
+    wh = (rb - lt).clamp(min=0)
+    overlap = wh[:, 0] * wh[:, 1]
+
+    # union
+    ap = (pred[:, 2] - pred[:, 0]) * (pred[:, 3] - pred[:, 1])
+    ag = (target[:, 2] - target[:, 0]) * (target[:, 3] - target[:, 1])
+    union = ap + ag - overlap + eps
+
+    # IoU
+    ious = overlap / union
+
+    # enclose area
+    enclose_x1y1 = torch.min(pred[:, :2], target[:, :2])
+    enclose_x2y2 = torch.max(pred[:, 2:], target[:, 2:])
+    enclose_wh = (enclose_x2y2 - enclose_x1y1).clamp(min=0)
+
+    cw = enclose_wh[:, 0]
+    ch = enclose_wh[:, 1]
+
+    b1_x1, b1_y1 = pred[:, 0], pred[:, 1]
+    b1_x2, b1_y2 = pred[:, 2], pred[:, 3]
+    b2_x1, b2_y1 = target[:, 0], target[:, 1]
+    b2_x2, b2_y2 = target[:, 2], target[:, 3]
+
+    s_cw = (b2_x1 + b2_x2 - b1_x1 - b1_x2) * 0.5
+    s_ch = (b2_y1 + b2_y2 - b1_y1 - b1_y2) * 0.5
+    sigma = torch.pow(s_cw**2 + s_ch**2, 0.5)
+    sin_alpha_1 = torch.abs(s_cw) / sigma
+    sin_alpha_2 = torch.abs(s_ch) / sigma
+
+    threshold = pow(2, 0.5) / 2
+    sin_alpha = torch.where(sin_alpha_1 > threshold, sin_alpha_2, sin_alpha_1)
+    # angle_cost = 1 - 2 * torch.pow( torch.sin(torch.arcsin(sin_alpha) - np.pi/4), 2)
+    angle_cost = torch.cos(torch.arcsin(sin_alpha) * 2 - torch.pi / 2)
+
+    # distant_cost
+    w1, h1 = b1_x2 - b1_x1, b1_y2 - b1_y1 + eps
+    w2, h2 = b2_x2 - b2_x1, b2_y2 - b2_y1 + eps
+    rho_x = (s_cw / cw)**2
+    rho_y = (s_ch / ch)**2
+    gamma = 2 - angle_cost
+    distance_cost = 2 - torch.exp(-1 * gamma * rho_x) - torch.exp(
+        -1 * gamma * rho_y)
+
+    # shape_cost
+    omiga_w = torch.abs(w1 - w2) / torch.max(w1, w2)
+    omiga_h = torch.abs(h1 - h2) / torch.max(h1, h2)
+    shape_cost = torch.pow(1 - torch.exp(-1 * omiga_w), 4) + torch.pow(
+        1 - torch.exp(-1 * omiga_h), 4)
+
+    # SIoU
+    siou = ious - 0.5 * (distance_cost + shape_cost)
+    loss = 1 - siou
+    return loss
+
+
 @LOSSES.register_module()
 class IoULoss(nn.Module):
     """IoULoss.
@@ -464,6 +538,46 @@ class CIoULoss(nn.Module):
             assert weight.shape == pred.shape
             weight = weight.mean(-1)
         loss = self.loss_weight * ciou_loss(
+            pred,
+            target,
+            weight,
+            eps=self.eps,
+            reduction=reduction,
+            avg_factor=avg_factor,
+            **kwargs)
+        return loss
+
+
+@LOSSES.register_module()
+class SIoULoss(nn.Module):
+
+    def __init__(self, eps=1e-6, reduction='mean', loss_weight=1.0):
+        super(SIoULoss, self).__init__()
+        self.eps = eps
+        self.reduction = reduction
+        self.loss_weight = loss_weight
+
+    def forward(self,
+                pred,
+                target,
+                weight=None,
+                avg_factor=None,
+                reduction_override=None,
+                **kwargs):
+        if weight is not None and not torch.any(weight > 0):
+            if pred.dim() == weight.dim() + 1:
+                weight = weight.unsqueeze(1)
+            return (pred * weight).sum()  # 0
+        assert reduction_override in (None, 'none', 'mean', 'sum')
+        reduction = (
+            reduction_override if reduction_override else self.reduction)
+        if weight is not None and weight.dim() > 1:
+            # TODO: remove this in the future
+            # reduce the weight of shape (n, 4) to (n,) to match the
+            # giou_loss of shape (n,)
+            assert weight.shape == pred.shape
+            weight = weight.mean(-1)
+        loss = self.loss_weight * siou_loss(
             pred,
             target,
             weight,

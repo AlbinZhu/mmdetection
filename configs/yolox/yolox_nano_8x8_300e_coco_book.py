@@ -2,7 +2,7 @@
 Author: bin.zhu
 Date: 2022-06-14 11:29:44
 LastEditors: bin.zhu
-LastEditTime: 2022-06-17 10:38:03
+LastEditTime: 2022-06-20 14:01:29
 Description: file content
 '''
 
@@ -18,8 +18,12 @@ model = dict(
         num_csp_blocks=1,
         use_depthwise=True),
     bbox_head=dict(
-        num_classes=9, in_channels=64, feat_channels=64, use_depthwise=True))
-img_scale = (1024, 1024)  # height, width
+        num_classes=9,
+        in_channels=64,
+        feat_channels=64,
+        use_depthwise=True,
+        loss_bbox=dict(type='SIoULoss')))
+img_scale = (640, 640)  # height, width
 
 train_pipeline = [
     dict(type='Mosaic', img_scale=img_scale, pad_val=114.0),
@@ -43,7 +47,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=(1024, 1024),
+        img_scale=(640, 640),
         flip=False,
         transforms=[
             dict(type='Resize', keep_ratio=True),
