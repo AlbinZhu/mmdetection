@@ -2,7 +2,7 @@
 Author: bin.zhu
 Date: 2022-06-14 11:29:44
 LastEditors: bin.zhu
-LastEditTime: 2022-06-21 11:26:49
+LastEditTime: 2022-06-22 10:28:14
 Description: file content
 '''
 
@@ -24,7 +24,7 @@ model = dict(
         use_depthwise=True,
         loss_bbox=dict(
             type='SIoULoss', eps=1e-16, reduction='sum', loss_weight=5.0)))
-img_scale = (1024, 1024)  # height, width
+img_scale = (640, 640)  # height, width
 
 train_pipeline = [
     dict(type='Mosaic', img_scale=img_scale, pad_val=114.0),
@@ -90,4 +90,5 @@ data = dict(
         img_prefix=data_root + 'val/',
         pipeline=test_pipeline))
 max_epochs = 500
+runner = dict(type='EpochBasedRunner', max_epochs=max_epochs)
 load_from="/albin/yolox_tiny_8x8_300e_coco_20211124_171234-b4047906.pth"
